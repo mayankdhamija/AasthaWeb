@@ -97,7 +97,7 @@ function App() {
   const newArrivals = products.slice(0, 4);
 
   const handleCheckout = () => {
-    const phoneNumber = "919352617073"; 
+    const phoneNumber = "919352617073";
     const message = `*New Order from Aastha Fashion*%0A%0A` + 
       cart.map(item => `• ${item.name} (${item.selectedSize}) (x${item.quantity}) - ₹${(item.price * item.quantity).toLocaleString()}`).join('%0A') +
       `%0A%0A*Total: ₹${cartTotal.toLocaleString()}*%0A%0A_Please confirm my order._`;
@@ -231,7 +231,7 @@ function App() {
                   <p className="text-slate-400 font-medium">Get exclusive access to new drops, offers and style updates.</p>
                 </div>
                 <a
-                  href="https://chat.whatsapp.com/REPLACE_WITH_YOUR_GROUP_LINK"
+                  href="https://chat.whatsapp.com/KmX674QnXG26BIywIayUec"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-shrink-0 bg-[#25D366] text-white px-10 py-4 font-black hover:bg-[#128C7E] transition-all flex items-center gap-3 text-sm uppercase tracking-widest shadow-xl"
@@ -347,7 +347,7 @@ function App() {
             <ul className="text-slate-400 space-y-4 text-sm font-medium uppercase tracking-wide">
               <li>
                 <a href="https://wa.me/919352617073" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[#25D366] transition-colors">
-                  <MessageCircle size={16} /> +91 93526 17073
+                  <MessageCircle size={16} /> +91 9352617073
                 </a>
               </li>
               <li>
@@ -355,7 +355,7 @@ function App() {
                   <Camera size={16} /> @aastha_fashion.06
                 </a>
               </li>
-              <li>Mumbai, India</li>
+              <li>Sriganganagar, Rajasthan, India</li>
             </ul>
           </div>
         </div>
