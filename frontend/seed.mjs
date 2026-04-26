@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -27,6 +27,7 @@ const products = [
       "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&auto=format&fit=crop&q=80",
     ],
     availableSizes: standardSizes,
+    stock: { XS: 3, S: 5, M: 4, L: 2, XL: 1 },
     category: "Evening",
   },
   {
@@ -38,6 +39,7 @@ const products = [
       "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&auto=format&fit=crop&q=80",
     ],
     availableSizes: standardSizes,
+    stock: { XS: 0, S: 6, M: 8, L: 5, XL: 3 },
     category: "Streetwear",
   },
   {
@@ -49,6 +51,7 @@ const products = [
       "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800&auto=format&fit=crop&q=80",
     ],
     availableSizes: standardSizes,
+    stock: { XS: 4, S: 7, M: 6, L: 4, XL: 2 },
     category: "Casual",
   },
   {
@@ -60,6 +63,7 @@ const products = [
       "https://images.unsplash.com/photo-1548883354-7622d03aca27?w=800&auto=format&fit=crop&q=80",
     ],
     availableSizes: standardSizes,
+    stock: { XS: 2, S: 4, M: 5, L: 3, XL: 0 },
     category: "Workwear",
   },
   {
@@ -71,6 +75,7 @@ const products = [
       "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&auto=format&fit=crop&q=80",
     ],
     availableSizes: standardSizes,
+    stock: { XS: 0, S: 0, M: 0, L: 0, XL: 0 },  // fully out of stock example
     category: "Casual",
   },
   {
@@ -82,17 +87,23 @@ const products = [
       "https://images.unsplash.com/photo-1551107643-406b3a01662c?w=800&auto=format&fit=crop&q=80",
     ],
     availableSizes: standardSizes,
+    stock: { XS: 1, S: 3, M: 4, L: 2, XL: 1 },
     category: "Evening",
   },
 ];
 
 async function seed() {
-  console.log('Seeding products to Firestore...');
+  console.log('Deleting existing products...');
+  const snapshot = await getDocs(collection(db, 'products'));
+  for (const doc of snapshot.docs) {
+    await deleteDoc(doc.ref);
+  }
+  console.log('Seeding products with stock data...');
   for (const product of products) {
     await addDoc(collection(db, 'products'), product);
     console.log(`✅ Added: ${product.name}`);
   }
-  console.log('🎉 All products seeded!');
+  console.log('🎉 All products seeded with stock!');
   process.exit(0);
 }
 

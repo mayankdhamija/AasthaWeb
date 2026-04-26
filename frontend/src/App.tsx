@@ -12,6 +12,7 @@ interface Product {
   imageUrls: string[];
   availableSizes: string[];
   category: string;
+  stock: { [size: string]: number };
 }
 
 interface CartItem extends Product {
@@ -75,8 +76,11 @@ function App() {
   };
 
   const addToCart = (product: Product, size: string) => {
+    const stockForSize = product.stock?.[size] ?? 0;
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id && item.selectedSize === size);
+      const currentQty = existing ? existing.quantity : 0;
+      if (currentQty >= stockForSize) return prev; // can't exceed stock
       if (existing) {
         return prev.map(item => (item.id === product.id && item.selectedSize === size) ? { ...item, quantity: item.quantity + 1 } : item);
       }
@@ -302,7 +306,8 @@ function App() {
                         <span className="font-bold w-4 text-center">{item.quantity}</span>
                         <button 
                           onClick={() => setCart(prev => prev.map(i => (i.id === item.id && i.selectedSize === item.selectedSize) ? { ...i, quantity: i.quantity + 1 } : i))}
-                          className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full font-bold transition-colors"
+                          disabled={item.quantity >= (item.stock?.[item.selectedSize] ?? 0)}
+                          className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         >+</button>
                       </div>
                       <button onClick={() => removeFromCart(item.id, item.selectedSize)} className="text-slate-300 hover:text-rose-600 transition-colors"><X size={20} /></button>
@@ -375,6 +380,9 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
   const [selectedSize, setSelectedSize] = useState<string>('');
   const urls = product.imageUrls || [];
 
+  const isFullyOutOfStock = product.availableSizes?.every(size => (product.stock?.[size] ?? 0) === 0);
+  const isSizeOutOfStock = (size: string) => (product.stock?.[size] ?? 0) === 0;
+
   const nextImg = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (urls.length > 0) {
@@ -421,36 +429,59 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
           <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
             <p className="text-white text-[10px] font-black tracking-widest uppercase">Select Size</p>
             <div className="flex flex-wrap justify-center gap-2 px-4">
-              {product.availableSizes?.map(size => (
-                <button 
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-bold transition-all ${selectedSize === size ? 'bg-white text-black scale-110' : 'bg-black/20 text-white hover:bg-white/40 border border-white/30'}`}
-                >
-                  {size}
-                </button>
-              ))}
+              {product.availableSizes?.map(size => {
+                const oos = isSizeOutOfStock(size);
+                const stock = product.stock?.[size] ?? 0;
+                return (
+                  <button
+                    key={size}
+                    onClick={() => !oos && setSelectedSize(size)}
+                    disabled={oos}
+                    title={oos ? 'Out of stock' : `${stock} left`}
+                    className={`w-10 h-10 flex items-center justify-center text-xs font-bold transition-all relative
+                      ${oos ? 'bg-black/10 text-white/30 cursor-not-allowed line-through border border-white/10' :
+                        selectedSize === size ? 'bg-white text-black scale-110' :
+                        'bg-black/20 text-white hover:bg-white/40 border border-white/30'}`}
+                  >
+                    {size}
+                    {oos && <span className="absolute inset-0 flex items-center justify-center"><span className="w-full h-[1px] bg-white/30 rotate-45 absolute"></span></span>}
+                  </button>
+                );
+              })}
             </div>
+            {selectedSize && !isSizeOutOfStock(selectedSize) && (
+              <p className="text-white/70 text-[10px] font-bold tracking-widest">
+                {product.stock?.[selectedSize]} left in stock
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1">
           <span className="bg-black text-white text-[10px] font-black px-2 py-1 uppercase tracking-widest shadow-lg">
             {product.category}
           </span>
+          {isFullyOutOfStock && (
+            <span className="bg-red-600 text-white text-[10px] font-black px-2 py-1 uppercase tracking-widest shadow-lg">
+              Out of Stock
+            </span>
+          )}
         </div>
 
         <button 
           onClick={() => {
-            if (selectedSize) {
+            if (selectedSize && !isSizeOutOfStock(selectedSize)) {
               onAdd(product, selectedSize);
               setSelectedSize('');
             }
           }}
-          disabled={!selectedSize}
-          className={`absolute bottom-0 w-full py-5 font-black uppercase tracking-widest text-xs translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-30 ${selectedSize ? 'bg-rose-600 text-white cursor-pointer' : 'bg-slate-800 text-slate-400 cursor-not-allowed'}`}
+          disabled={!selectedSize || isFullyOutOfStock || isSizeOutOfStock(selectedSize)}
+          className={`absolute bottom-0 w-full py-5 font-black uppercase tracking-widest text-xs translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-30 
+            ${isFullyOutOfStock ? 'bg-slate-600 text-slate-400 cursor-not-allowed' :
+              selectedSize && !isSizeOutOfStock(selectedSize) ? 'bg-rose-600 text-white cursor-pointer' :
+              'bg-slate-800 text-slate-400 cursor-not-allowed'}`}
         >
-          {selectedSize ? `ADD SIZE ${selectedSize} TO BAG` : 'SELECT A SIZE'}
+          {isFullyOutOfStock ? 'OUT OF STOCK' : selectedSize ? `ADD SIZE ${selectedSize} TO BAG` : 'SELECT A SIZE'}
         </button>
       </div>
 
