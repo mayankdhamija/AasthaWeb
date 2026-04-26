@@ -228,12 +228,16 @@ function App() {
               <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                 <div>
                   <h3 className="text-3xl font-black mb-2">JOIN THE FASHION CLUB</h3>
-                  <p className="text-slate-400 font-medium">Get 15% off your first order and exclusive access to new drops.</p>
+                  <p className="text-slate-400 font-medium">Get exclusive access to new drops, offers and style updates.</p>
                 </div>
-                <div className="flex w-full md:w-auto">
-                  <input type="email" placeholder="ENTER YOUR EMAIL" className="bg-slate-900 border border-slate-800 px-6 py-4 w-full md:w-80 font-bold focus:outline-none focus:border-rose-600 transition-colors" />
-                  <button className="bg-rose-600 px-8 py-4 font-black hover:bg-rose-700 transition-colors">JOIN</button>
-                </div>
+                <a
+                  href="https://chat.whatsapp.com/REPLACE_WITH_YOUR_GROUP_LINK"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 bg-[#25D366] text-white px-10 py-4 font-black hover:bg-[#128C7E] transition-all flex items-center gap-3 text-sm uppercase tracking-widest shadow-xl"
+                >
+                  <MessageCircle size={20} /> Join on WhatsApp
+                </a>
               </div>
             </section>
           </>
@@ -332,25 +336,15 @@ function App() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-black text-white pt-24 pb-12 px-4 mt-24">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12 border-b border-slate-800 pb-16">
-          <div className="md:col-span-2">
+      <footer className="bg-black text-white pt-16 pb-12 px-4">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 border-b border-slate-800 pb-12">
+          <div>
             <h1 className="text-3xl font-black tracking-tighter mb-6 uppercase">AASTHA FASHION</h1>
             <p className="text-slate-400 max-w-sm leading-relaxed font-medium">Elevating your everyday wardrobe with premium quality western wear that combines comfort with avant-garde design. From the streets to the gala, we have you covered.</p>
           </div>
           <div>
-            <h4 className="font-bold uppercase tracking-widest text-xs mb-6 text-rose-600">Customer Care</h4>
-            <ul className="text-slate-400 space-y-4 text-sm font-medium uppercase tracking-wide">
-              <li><a href="#" className="hover:text-white transition-colors">Order Tracking</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Shipping & Delivery</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Returns & Exchanges</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Size Guide</a></li>
-            </ul>
-          </div>
-          <div>
             <h4 className="font-bold uppercase tracking-widest text-xs mb-6 text-rose-600">Contact Us</h4>
             <ul className="text-slate-400 space-y-4 text-sm font-medium uppercase tracking-wide">
-              <li><a href="mailto:info@aasthafashion.com" className="hover:text-white transition-colors">info@aasthafashion.com</a></li>
               <li>
                 <a href="https://wa.me/919352617073" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[#25D366] transition-colors">
                   <MessageCircle size={16} /> +91 93526 17073
