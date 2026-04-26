@@ -269,8 +269,6 @@ function App() {
                     <div className="flex-1">
                       <h4 className="font-bold text-lg uppercase tracking-tight leading-tight mb-1">{item.name}</h4>
                       <div className="flex items-center gap-3 mb-2">
-                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{item.category}</p>
-                        <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                         <p className="text-rose-600 text-[10px] font-black uppercase tracking-widest">Size: {item.selectedSize}</p>
                       </div>
                       <p className="font-black text-black">₹{item.price.toLocaleString()}</p>
@@ -413,7 +411,6 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
 
           {/* Badges */}
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
-            <span className="bg-black text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest">{product.category}</span>
             {isFullyOutOfStock && (
               <span className="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest">Out of Stock</span>
             )}
@@ -471,7 +468,6 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
             <div className="p-5">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-rose-600">{product.category}</span>
                   <h3 className="font-black text-lg uppercase tracking-tight leading-tight mt-0.5">{product.name}</h3>
                   <p className="text-slate-400 text-sm mt-1">{product.description}</p>
                 </div>
