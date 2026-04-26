@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from './firebase'
 import { ShoppingBag, Star, Menu, X, ShoppingCart, ArrowRight, Heart, ChevronLeft, ChevronRight, Camera, MessageCircle } from 'lucide-react'
 import './App.css'
 
@@ -61,9 +62,10 @@ function App() {
 
   const fetchProducts = () => {
     setLoading(true);
-    axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/products`)
-      .then(response => {
-        setProducts(response.data);
+    getDocs(collection(db, 'products'))
+      .then(snapshot => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Product));
+        setProducts(data);
         setLoading(false);
       })
       .catch(error => {
