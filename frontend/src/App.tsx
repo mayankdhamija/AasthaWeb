@@ -61,7 +61,7 @@ function App() {
 
   const fetchProducts = () => {
     setLoading(true);
-    axios.get('http://localhost:8080/api/products')
+    axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/products`)
       .then(response => {
         setProducts(response.data);
         setLoading(false);
