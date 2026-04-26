@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from './firebase'
-import { ShoppingBag, Menu, X, ShoppingCart, ArrowRight, Heart, ChevronLeft, ChevronRight, Camera, MessageCircle } from 'lucide-react'
+import { ShoppingBag, Menu, X, ShoppingCart, ArrowRight, Heart, ChevronLeft, ChevronRight, Camera, MessageCircle, ArrowLeft } from 'lucide-react'
 import './App.css'
 
 interface Product {
@@ -48,7 +48,8 @@ function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'home' | 'shop' | 'cart'>('home');
+  const [view, setView] = useState<'home' | 'shop' | 'cart' | 'product'>('home');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -102,6 +103,12 @@ function App() {
       `%0A%0A*Total: ₹${cartTotal.toLocaleString()}*%0A%0A_Please confirm my order._`;
     
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+  };
+
+  const openProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setView('product');
+    window.scrollTo({ top: 0 });
   };
 
   return (
@@ -211,7 +218,7 @@ function App() {
                   [1,2,3,4].map(i => <div key={i} className="aspect-[3/4] bg-slate-100 animate-pulse"></div>)
                 ) : (
                   newArrivals.map(product => (
-                    <ProductCard key={product.id} product={product} onAdd={addToCart} />
+                    <ProductCard key={product.id} product={product} onOpen={openProduct} />
                   ))
                 )}
               </div>
@@ -245,7 +252,7 @@ function App() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
                 {products.map(product => (
-                  <ProductCard key={product.id} product={product} onAdd={addToCart} />
+                  <ProductCard key={product.id} product={product} onOpen={openProduct} />
                 ))}
               </div>
             )}
@@ -312,6 +319,14 @@ function App() {
             )}
           </section>
         )}
+
+        {view === 'product' && selectedProduct && (
+          <ProductPage
+            product={selectedProduct}
+            onAdd={addToCart}
+            onBack={() => setView('shop')}
+          />
+        )}
       </div>
 
       {/* Footer */}
@@ -357,14 +372,11 @@ function App() {
   )
 }
 
-function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product, size: string) => void }) {
+function ProductCard({ product, onOpen }: { product: Product, onOpen: (p: Product) => void }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [modalOpen, setModalOpen] = useState(false);
   const urls = product.imageUrls || [];
 
   const isFullyOutOfStock = product.availableSizes?.every(size => (product.stock?.[size] ?? 0) === 0);
-  const isSizeOutOfStock = (size: string) => (product.stock?.[size] ?? 0) === 0;
 
   const nextImg = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -376,18 +388,10 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
     if (urls.length > 0) setCurrentImgIndex((prev) => (prev - 1 + urls.length) % urls.length);
   };
 
-  const handleAddToCart = () => {
-    if (selectedSize && !isSizeOutOfStock(selectedSize)) {
-      onAdd(product, selectedSize);
-      setSelectedSize('');
-      setModalOpen(false);
-    }
-  };
-
   return (
     <>
       {/* Product Card */}
-      <div className="relative flex flex-col cursor-pointer" onClick={() => !isFullyOutOfStock && setModalOpen(true)}>
+      <div className="relative flex flex-col cursor-pointer" onClick={() => !isFullyOutOfStock && onOpen(product)}>
         <div className="relative aspect-[3/4] overflow-hidden bg-slate-100 rounded-sm">
           {urls.length > 0 ? urls.map((url, idx) => (
             <img key={idx} src={url} alt={`${product.name} ${idx}`}
@@ -428,115 +432,115 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
           <p className="font-black text-xl tracking-tighter">₹{product.price.toLocaleString()}</p>
         </div>
       </div>
-
-      {/* Modal Popup */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
-          onClick={() => { setModalOpen(false); setSelectedSize(''); }}>
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-          {/* Modal Content */}
-          <div
-            className="relative bg-white w-full sm:max-w-md sm:rounded-2xl shadow-2xl overflow-y-auto max-h-[92dvh] sm:max-h-[90vh]"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => { setModalOpen(false); setSelectedSize(''); }}
-              className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/10 hover:bg-black/20 rounded-full flex items-center justify-center transition-colors"
-            >
-              <X size={16} />
-            </button>
-
-            {/* Product image */}
-            <div className="relative w-full aspect-square bg-slate-100 flex-shrink-0 overflow-hidden">
-              {urls.length > 0 && (
-                <img src={urls[currentImgIndex]} alt={product.name} className="w-full h-full object-cover" />
-              )}
-              {urls.length > 1 && (
-                <>
-                  <button
-                    onClick={() => setCurrentImgIndex((prev) => (prev - 1 + urls.length) % urls.length)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/70 backdrop-blur-md rounded-full shadow hover:bg-white transition-all"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button
-                    onClick={() => setCurrentImgIndex((prev) => (prev + 1) % urls.length)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/70 backdrop-blur-md rounded-full shadow hover:bg-white transition-all"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {urls.map((_, i) => (
-                      <button key={i} onClick={() => setCurrentImgIndex(i)}
-                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImgIndex ? 'bg-white w-4' : 'bg-white/50'}`} />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Info + Size Picker */}
-            <div className="p-5">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-black text-lg uppercase tracking-tight leading-tight mt-0.5">{product.name}</h3>
-                  <p className="text-slate-400 text-sm mt-1">{product.description}</p>
-                </div>
-                <p className="font-black text-2xl tracking-tighter ml-4">₹{product.price.toLocaleString()}</p>
-              </div>
-
-              {/* Size buttons */}
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Select Size</p>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {product.availableSizes?.map(size => {
-                  const oos = isSizeOutOfStock(size);
-                  const stock = product.stock?.[size] ?? 0;
-                  return (
-                    <button
-                      key={size}
-                      onClick={() => !oos && setSelectedSize(size)}
-                      disabled={oos}
-                      title={oos ? 'Out of stock' : `${stock} left`}
-                      className={`h-11 min-w-[44px] px-3 flex items-center justify-center text-sm font-bold transition-all rounded-sm
-                        ${oos
-                          ? 'bg-slate-100 text-slate-300 cursor-not-allowed line-through'
-                          : selectedSize === size
-                            ? 'bg-black text-white shadow-md scale-105'
-                            : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-black'}`}
-                    >
-                      {size}
-                      {!oos && <span className="ml-1 text-[9px] text-slate-400 font-normal">{stock}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {selectedSize && !isSizeOutOfStock(selectedSize) && (
-                <p className="text-[11px] text-emerald-600 font-bold mb-3">
-                  ✓ {product.stock?.[selectedSize]} items available in size {selectedSize}
-                </p>
-              )}
-              {!selectedSize && <div className="mb-3" />}
-
-              {/* Add to Bag */}
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSize}
-                className={`w-full py-4 font-black uppercase tracking-widest text-sm rounded-sm transition-all
-                  ${selectedSize
-                    ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-lg'
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
-              >
-                {selectedSize ? `Add Size ${selectedSize} to Bag — ₹${product.price.toLocaleString()}` : 'Please Select a Size'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
+  );
+}
+
+function ProductPage({ product, onAdd, onBack }: { product: Product, onAdd: (p: Product, size: string) => void, onBack: () => void }) {
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const urls = product.imageUrls || [];
+
+  const isSizeOutOfStock = (size: string) => (product.stock?.[size] ?? 0) === 0;
+
+  const handleAddToCart = () => {
+    if (selectedSize && !isSizeOutOfStock(selectedSize)) {
+      onAdd(product, selectedSize);
+      setSelectedSize('');
+    }
+  };
+
+  return (
+    <div className="py-12 px-4 max-w-3xl mx-auto">
+      {/* Back to Shop button */}
+      <button 
+        onClick={onBack}
+        className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors mb-8"
+      >
+        <ArrowLeft size={18} /> Back to Shop
+      </button>
+
+      {/* Product images carousel */}
+      <div className="relative w-full aspect-square bg-slate-100 flex-shrink-0 overflow-hidden">
+        {urls.length > 0 && (
+          <img src={urls[currentImgIndex]} alt={product.name} className="w-full h-full object-cover" />
+        )}
+        {urls.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentImgIndex((prev) => (prev - 1 + urls.length) % urls.length)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/70 backdrop-blur-md rounded-full shadow hover:bg-white transition-all"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={() => setCurrentImgIndex((prev) => (prev + 1) % urls.length)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/70 backdrop-blur-md rounded-full shadow hover:bg-white transition-all"
+            >
+              <ChevronRight size={18} />
+            </button>
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {urls.map((_, i) => (
+                <button key={i} onClick={() => setCurrentImgIndex(i)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImgIndex ? 'bg-white w-4' : 'bg-white/50'}`} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Product info */}
+      <div className="mt-6">
+        <h3 className="font-black text-3xl uppercase tracking-tight leading-tight">{product.name}</h3>
+        <p className="text-slate-400 text-sm mt-1">{product.description}</p>
+
+        {/* Size selector */}
+        <div className="mt-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Select Size</p>
+          <div className="flex flex-wrap gap-2">
+            {product.availableSizes?.map(size => {
+              const oos = isSizeOutOfStock(size);
+              const stock = product.stock?.[size] ?? 0;
+              return (
+                <button
+                  key={size}
+                  onClick={() => !oos && setSelectedSize(size)}
+                  disabled={oos}
+                  title={oos ? 'Out of stock' : `${stock} left`}
+                  className={`h-11 min-w-[44px] px-3 flex items-center justify-center text-sm font-bold transition-all
+                    ${oos
+                      ? 'bg-slate-100 text-slate-300 cursor-not-allowed line-through'
+                      : selectedSize === size
+                        ? 'bg-black text-white shadow-md scale-105'
+                        : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-black'}`}
+                >
+                  {size}
+                  {!oos && <span className="ml-1 text-[9px] text-slate-400 font-normal">{stock}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedSize && !isSizeOutOfStock(selectedSize) && (
+            <p className="text-[11px] text-emerald-600 font-bold mt-2">
+              ✓ {product.stock?.[selectedSize]} items available in size {selectedSize}
+            </p>
+          )}
+        </div>
+
+        {/* Add to Bag button */}
+        <button
+          onClick={handleAddToCart}
+          disabled={!selectedSize}
+          className={`w-full mt-4 py-4 font-black uppercase tracking-widest text-sm rounded-sm transition-all
+            ${selectedSize
+              ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-lg'
+              : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+        >
+          {selectedSize ? `Add Size ${selectedSize} to Bag — ₹${product.price.toLocaleString()}` : 'Please Select a Size'}
+        </button>
+      </div>
+    </div>
   );
 }
 
