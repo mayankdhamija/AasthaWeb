@@ -438,7 +438,7 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
 
           {/* Modal Content */}
           <div
-            className="relative bg-white w-full sm:max-w-md sm:rounded-2xl shadow-2xl overflow-hidden animate-slide-up"
+            className="relative bg-white w-full sm:max-w-md sm:rounded-2xl shadow-2xl overflow-y-auto max-h-[92dvh] sm:max-h-[90vh]"
             onClick={e => e.stopPropagation()}
           >
             {/* Close button */}
@@ -450,17 +450,31 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
             </button>
 
             {/* Product image */}
-            <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
+            <div className="relative w-full aspect-square bg-slate-100 flex-shrink-0 overflow-hidden">
               {urls.length > 0 && (
                 <img src={urls[currentImgIndex]} alt={product.name} className="w-full h-full object-cover" />
               )}
               {urls.length > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                  {urls.map((_, i) => (
-                    <button key={i} onClick={() => setCurrentImgIndex(i)}
-                      className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImgIndex ? 'bg-white w-4' : 'bg-white/50'}`} />
-                  ))}
-                </div>
+                <>
+                  <button
+                    onClick={() => setCurrentImgIndex((prev) => (prev - 1 + urls.length) % urls.length)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/70 backdrop-blur-md rounded-full shadow hover:bg-white transition-all"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    onClick={() => setCurrentImgIndex((prev) => (prev + 1) % urls.length)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/70 backdrop-blur-md rounded-full shadow hover:bg-white transition-all"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {urls.map((_, i) => (
+                      <button key={i} onClick={() => setCurrentImgIndex(i)}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImgIndex ? 'bg-white w-4' : 'bg-white/50'}`} />
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 
