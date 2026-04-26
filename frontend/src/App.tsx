@@ -49,7 +49,6 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'home' | 'shop' | 'cart'>('home');
-  const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -94,7 +93,6 @@ function App() {
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   
-  const filteredProducts = categoryFilter === 'All' ? products : products.filter(p => p.category === categoryFilter);
   const newArrivals = products.filter(p => p.category === 'Streetwear' || p.category === 'Casual').slice(0, 4);
 
   const handleCheckout = () => {
@@ -113,15 +111,13 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
           <div className="flex items-center gap-8">
             <h1 
-              onClick={() => { setView('home'); setCategoryFilter('All'); }}
+              onClick={() => setView('home')}
               className="text-2xl font-black tracking-tighter cursor-pointer text-black"
             >
               AASTHA <span className="text-rose-600">FASHION</span>
             </h1>
             <div className="hidden md:flex gap-6 text-sm font-semibold uppercase tracking-wider text-slate-500">
-              <button onClick={() => { setView('shop'); setCategoryFilter('All'); }} className="hover:text-black transition-colors">Shop All</button>
-              <button onClick={() => { setView('shop'); setCategoryFilter('Streetwear'); }} className="hover:text-black transition-colors">New Arrivals</button>
-              <button onClick={() => { setView('shop'); setCategoryFilter('Evening'); }} className="hover:text-black transition-colors">Evening Wear</button>
+              <button onClick={() => setView('shop')} className="hover:text-black transition-colors">Shop All</button>
             </div>
           </div>
           
@@ -204,7 +200,7 @@ function App() {
                   <p className="text-slate-500 mt-2">Fresh drops from our latest western collection.</p>
                 </div>
                 <button 
-                  onClick={() => { setView('shop'); setCategoryFilter('Streetwear'); }}
+                  onClick={() => setView('shop')}
                   className="text-sm font-bold border-b-2 border-black pb-1 hover:text-rose-600 hover:border-rose-600 transition-all"
                 >
                   EXPLORE ALL
@@ -238,21 +234,9 @@ function App() {
 
         {view === 'shop' && (
           <section className="py-12 px-4 max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-              <h3 className="text-4xl font-black uppercase tracking-tighter">
-                {categoryFilter === 'All' ? 'Complete' : categoryFilter} Collection
-              </h3>
-              <div className="flex flex-wrap justify-center gap-3">
-                {['All', 'Streetwear', 'Evening', 'Workwear', 'Casual'].map(cat => (
-                  <button 
-                    key={cat}
-                    onClick={() => setCategoryFilter(cat)}
-                    className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${categoryFilter === cat ? 'bg-black text-white' : 'bg-slate-100 hover:bg-slate-200'}`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+            <div className="mb-12">
+              <h3 className="text-4xl font-black uppercase tracking-tighter">Complete Collection</h3>
+              <p className="text-slate-500 mt-2">All our latest western wear in one place.</p>
             </div>
             {loading ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -260,7 +244,7 @@ function App() {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-                {filteredProducts.map(product => (
+                {products.map(product => (
                   <ProductCard key={product.id} product={product} onAdd={addToCart} />
                 ))}
               </div>
