@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from './firebase'
-import { ShoppingBag, Star, Menu, X, ShoppingCart, ArrowRight, Heart, ChevronLeft, ChevronRight, Camera, MessageCircle } from 'lucide-react'
+import { ShoppingBag, Menu, X, ShoppingCart, ArrowRight, Heart, ChevronLeft, ChevronRight, Camera, MessageCircle } from 'lucide-react'
 import './App.css'
 
 interface Product {
