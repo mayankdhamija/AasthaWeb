@@ -325,6 +325,8 @@ function App() {
             product={selectedProduct}
             onAdd={addToCart}
             onBack={() => setView('shop')}
+            onViewCart={() => setView('cart')}
+            cartCount={cart.reduce((a, b) => a + b.quantity, 0)}
           />
         )}
       </div>
@@ -436,7 +438,7 @@ function ProductCard({ product, onOpen }: { product: Product, onOpen: (p: Produc
   );
 }
 
-function ProductPage({ product, onAdd, onBack }: { product: Product, onAdd: (p: Product, size: string) => void, onBack: () => void }) {
+function ProductPage({ product, onAdd, onBack, onViewCart, cartCount }: { product: Product, onAdd: (p: Product, size: string) => void, onBack: () => void, onViewCart: () => void, cartCount: number }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const urls = product.imageUrls || [];
@@ -539,6 +541,16 @@ function ProductPage({ product, onAdd, onBack }: { product: Product, onAdd: (p: 
         >
           {selectedSize ? `Add Size ${selectedSize} to Bag — ₹${product.price.toLocaleString()}` : 'Please Select a Size'}
         </button>
+
+        {/* Go to Bag button — shown when cart has items or a size is selected */}
+        {(cartCount > 0 || selectedSize) && (
+          <button
+            onClick={onViewCart}
+            className="w-full mt-3 py-4 font-black uppercase tracking-widest text-sm rounded-sm border-2 border-black text-black hover:bg-black hover:text-white transition-all flex items-center justify-center gap-2"
+          >
+            <ShoppingBag size={18} /> Go to Bag ({cartCount} {cartCount === 1 ? 'item' : 'items'})
+          </button>
+        )}
       </div>
     </div>
   );
