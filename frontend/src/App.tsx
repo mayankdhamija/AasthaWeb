@@ -378,6 +378,7 @@ function App() {
 function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product, size: string) => void }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [expanded, setExpanded] = useState(false);
   const urls = product.imageUrls || [];
 
   const isFullyOutOfStock = product.availableSizes?.every(size => (product.stock?.[size] ?? 0) === 0);
@@ -385,109 +386,125 @@ function ProductCard({ product, onAdd }: { product: Product, onAdd: (p: Product,
 
   const nextImg = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (urls.length > 0) {
-      setCurrentImgIndex((prev) => (prev + 1) % urls.length);
-    }
+    if (urls.length > 0) setCurrentImgIndex((prev) => (prev + 1) % urls.length);
   };
 
   const prevImg = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (urls.length > 0) {
-      setCurrentImgIndex((prev) => (prev - 1 + urls.length) % urls.length);
+    if (urls.length > 0) setCurrentImgIndex((prev) => (prev - 1 + urls.length) % urls.length);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedSize && !isSizeOutOfStock(selectedSize)) {
+      onAdd(product, selectedSize);
+      setSelectedSize('');
+      setExpanded(false);
     }
   };
 
   return (
-    <div className="group relative">
-      <div className="relative aspect-[3/4] overflow-hidden bg-slate-100 mb-5 rounded-sm">
-        {/* Product Photo Carousel */}
-        <div className="w-full h-full relative">
-          {urls.length > 0 ? urls.map((url, idx) => (
-            <img 
-              key={idx}
-              src={url} 
-              alt={`${product.name} ${idx}`} 
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${idx === currentImgIndex ? 'opacity-100' : 'opacity-0'}`}
-            />
-          )) : (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-300 font-bold uppercase text-xs">No Image</div>
-          )}
-          
-          {/* Controls visible on hover */}
-          {urls.length > 1 && (
-            <div className="absolute inset-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-              <button onClick={prevImg} className="p-1 bg-white/50 backdrop-blur-md rounded-full hover:bg-white text-black transition-all shadow-sm">
-                <ChevronLeft size={16} />
-              </button>
-              <button onClick={nextImg} className="p-1 bg-white/50 backdrop-blur-md rounded-full hover:bg-white text-black transition-all shadow-sm">
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          )}
+    <div className="relative flex flex-col">
+      {/* Product Image */}
+      <div
+        className="relative aspect-[3/4] overflow-hidden bg-slate-100 rounded-sm cursor-pointer"
+        onClick={() => !isFullyOutOfStock && setExpanded(prev => !prev)}
+      >
+        {urls.length > 0 ? urls.map((url, idx) => (
+          <img
+            key={idx}
+            src={url}
+            alt={`${product.name} ${idx}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${idx === currentImgIndex ? 'opacity-100' : 'opacity-0'}`}
+          />
+        )) : (
+          <div className="absolute inset-0 flex items-center justify-center text-slate-300 font-bold uppercase text-xs">No Image</div>
+        )}
 
-          {/* Size Overlay on Hover */}
-          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-            <p className="text-white text-[10px] font-black tracking-widest uppercase">Select Size</p>
-            <div className="flex flex-wrap justify-center gap-2 px-4">
-              {product.availableSizes?.map(size => {
-                const oos = isSizeOutOfStock(size);
-                const stock = product.stock?.[size] ?? 0;
-                return (
-                  <button
-                    key={size}
-                    onClick={() => !oos && setSelectedSize(size)}
-                    disabled={oos}
-                    title={oos ? 'Out of stock' : `${stock} left`}
-                    className={`w-10 h-10 flex items-center justify-center text-xs font-bold transition-all relative
-                      ${oos ? 'bg-black/10 text-white/30 cursor-not-allowed line-through border border-white/10' :
-                        selectedSize === size ? 'bg-white text-black scale-110' :
-                        'bg-black/20 text-white hover:bg-white/40 border border-white/30'}`}
-                  >
-                    {size}
-                    {oos && <span className="absolute inset-0 flex items-center justify-center"><span className="w-full h-[1px] bg-white/30 rotate-45 absolute"></span></span>}
-                  </button>
-                );
-              })}
-            </div>
-            {selectedSize && !isSizeOutOfStock(selectedSize) && (
-              <p className="text-white/70 text-[10px] font-bold tracking-widest">
-                {product.stock?.[selectedSize]} left in stock
-              </p>
-            )}
+        {/* Prev/Next image buttons */}
+        {urls.length > 1 && (
+          <div className="absolute inset-0 flex items-center justify-between px-2 z-10">
+            <button onClick={prevImg} className="p-1 bg-white/60 backdrop-blur-md rounded-full text-black shadow-sm hover:bg-white transition-all">
+              <ChevronLeft size={14} />
+            </button>
+            <button onClick={nextImg} className="p-1 bg-white/60 backdrop-blur-md rounded-full text-black shadow-sm hover:bg-white transition-all">
+              <ChevronRight size={14} />
+            </button>
           </div>
-        </div>
+        )}
 
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1">
-          <span className="bg-black text-white text-[10px] font-black px-2 py-1 uppercase tracking-widest shadow-lg">
+        {/* Badges */}
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
+          <span className="bg-black text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest">
             {product.category}
           </span>
           {isFullyOutOfStock && (
-            <span className="bg-red-600 text-white text-[10px] font-black px-2 py-1 uppercase tracking-widest shadow-lg">
+            <span className="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest">
               Out of Stock
             </span>
           )}
         </div>
 
-        <button 
-          onClick={() => {
-            if (selectedSize && !isSizeOutOfStock(selectedSize)) {
-              onAdd(product, selectedSize);
-              setSelectedSize('');
-            }
-          }}
-          disabled={!selectedSize || isFullyOutOfStock || isSizeOutOfStock(selectedSize)}
-          className={`absolute bottom-0 w-full py-5 font-black uppercase tracking-widest text-xs translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-30 
-            ${isFullyOutOfStock ? 'bg-slate-600 text-slate-400 cursor-not-allowed' :
-              selectedSize && !isSizeOutOfStock(selectedSize) ? 'bg-rose-600 text-white cursor-pointer' :
-              'bg-slate-800 text-slate-400 cursor-not-allowed'}`}
-        >
-          {isFullyOutOfStock ? 'OUT OF STOCK' : selectedSize ? `ADD SIZE ${selectedSize} TO BAG` : 'SELECT A SIZE'}
-        </button>
+        {/* Tap hint at bottom of image */}
+        {!isFullyOutOfStock && (
+          <div className={`absolute bottom-0 w-full py-2 text-center text-[10px] font-black uppercase tracking-widest transition-all duration-300
+            ${expanded ? 'bg-rose-600 text-white' : 'bg-black/60 text-white/80'}`}>
+            {expanded ? 'TAP TO CLOSE' : 'TAP TO SELECT SIZE'}
+          </div>
+        )}
+        {isFullyOutOfStock && (
+          <div className="absolute bottom-0 w-full py-2 text-center text-[10px] font-black uppercase tracking-widest bg-slate-700 text-slate-400">
+            OUT OF STOCK
+          </div>
+        )}
       </div>
 
-      <div className="px-1">
-        <h4 className="font-bold text-[11px] uppercase tracking-widest mb-1 text-slate-500 group-hover:text-black transition-colors leading-tight">{product.name}</h4>
+      {/* Product Info */}
+      <div className="px-1 mt-3">
+        <h4 className="font-bold text-[11px] uppercase tracking-widest mb-1 text-slate-500 leading-tight">{product.name}</h4>
         <p className="font-black text-xl tracking-tighter">₹{product.price.toLocaleString()}</p>
+      </div>
+
+      {/* Expanded Size Selector — slides down below card */}
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expanded ? 'max-h-48 opacity-100 mt-3' : 'max-h-0 opacity-0 mt-0'}`}>
+        <div className="bg-slate-50 border border-slate-200 rounded-sm p-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Select Size</p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {product.availableSizes?.map(size => {
+              const oos = isSizeOutOfStock(size);
+              const stock = product.stock?.[size] ?? 0;
+              return (
+                <button
+                  key={size}
+                  onClick={() => !oos && setSelectedSize(size)}
+                  disabled={oos}
+                  title={oos ? 'Out of stock' : `${stock} left`}
+                  className={`min-w-[40px] h-10 px-2 flex items-center justify-center text-xs font-bold transition-all rounded-sm relative
+                    ${oos
+                      ? 'bg-slate-100 text-slate-300 cursor-not-allowed line-through'
+                      : selectedSize === size
+                        ? 'bg-black text-white scale-105 shadow-md'
+                        : 'bg-white border border-slate-300 text-slate-700 hover:border-black'}`}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+          {selectedSize && !isSizeOutOfStock(selectedSize) && (
+            <p className="text-[10px] text-slate-400 font-bold mb-3">
+              {product.stock?.[selectedSize]} left in stock
+            </p>
+          )}
+          <button
+            onClick={handleAddToCart}
+            disabled={!selectedSize}
+            className={`w-full py-3 text-xs font-black uppercase tracking-widest transition-all rounded-sm
+              ${selectedSize ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+          >
+            {selectedSize ? `Add Size ${selectedSize} to Bag` : 'Select a Size'}
+          </button>
+        </div>
       </div>
     </div>
   );
