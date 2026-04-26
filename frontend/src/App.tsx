@@ -93,7 +93,7 @@ function App() {
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   
-  const newArrivals = products.filter(p => p.category === 'Streetwear' || p.category === 'Casual').slice(0, 4);
+  const newArrivals = products.slice(0, 4);
 
   const handleCheckout = () => {
     const phoneNumber = "919352617073"; 
@@ -196,8 +196,8 @@ function App() {
             <section className="py-24 px-4 max-w-7xl mx-auto">
               <div className="flex justify-between items-end mb-12">
                 <div>
-                  <h3 className="text-3xl font-black uppercase tracking-tight">New Arrivals</h3>
-                  <p className="text-slate-500 mt-2">Fresh drops from our latest western collection.</p>
+                  <h3 className="text-3xl font-black uppercase tracking-tight">Our Collection</h3>
+                  <p className="text-slate-500 mt-2">Explore our latest western wear.</p>
                 </div>
                 <button 
                   onClick={() => setView('shop')}
