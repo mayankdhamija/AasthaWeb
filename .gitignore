@@ -13,7 +13,33 @@ backend/target/
 frontend/node_modules/
 frontend/dist/
 
-# Credentials (just in case)
+# ── Secrets & Sensitive Files ──────────────────────────
+# Environment files (never commit real secrets)
 .env
 .env.*
 !.env.example
+
+# Java keystores / certs
+*.jks
+*.p12
+*.pem
+*.key
+*.crt
+
+# Spring Boot secret configs
+application-prod.properties
+application-prod.yml
+application-secret.properties
+application-secret.yml
+
+# AWS / Cloud credentials
+.aws/
+credentials
+*.tfvars
+terraform.tfstate
+terraform.tfstate.backup
+
+# Private keys
+id_rsa
+id_ed25519
+*.ppk
